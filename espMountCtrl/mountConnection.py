@@ -97,7 +97,7 @@ class MountConnection:
     def goto(self, posAx1: int, posAx2: int) -> None:
         self._sendCmd(_CMD_STR_GOTO, posAx1, posAx2)
     
-    def stop(self, instant: bool) -> None:
+    def stop(self, instant: bool = False) -> None:
         instant_int = int(instant)
         self._sendCmd(_CMD_STR_STOP, instant_int)
     
