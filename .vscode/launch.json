@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "mountAxTest",
+            "type": "python",
+            "request": "launch",
+            "module": "espMountCtrl.examples.mountAxTest",
+            "justMyCode": true
+        },
+        {
+            "name": "mountSimple",
+            "type": "python",
+            "request": "launch",
+            "module": "espMountCtrl.examples.mountSimple",
+            "justMyCode": true
+        },
+        {
+            "name": "mountCommTest",
+            "type": "python",
+            "request": "launch",
+            "module": "espMountCtrl.examples.mountCommTest",
+            "justMyCode": true
+        }
+    ]
+}
