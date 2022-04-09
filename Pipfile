@@ -6,6 +6,12 @@ name = "pypi"
 [packages]
 pyserial = "*"
 astropy = "*"
+skyfield = "*"
+appdirs = "*"
+pytz = "*"
+tzlocal = "*"
+alive-progress = "*"
+matplotlib = "*"
 
 [dev-packages]
 

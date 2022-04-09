@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from .mountConnection import MountConnection, MountStatus
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Angle
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Angle, BaseRADecFrame
 import astropy.units as u
-from astropy.units import Unit
+from astropy.units import Quantity
 from astropy.time import Time
-from typing import Iterable, Tuple, Callable
+from typing import Iterable, Tuple, Callable, Union
 from time import sleep
 import math
 
@@ -18,9 +18,10 @@ class Mount:
     def __init__(self, axCoord: SkyCoord):
         self.axCoord = axCoord
         self.mountConnection = MountConnection()
+        self._time_func = Time.now
 
     @classmethod
-    def from_ax_altaz(cls, alt, az, lon, lat, obstime=Time.now()):
+    def from_ax_altaz(cls, alt: u.Quantity, az: u.Quantity, lon: u.Quantity, lat: u.Quantity, elevation: u.Quantity = "0m", obstime=Time.now()):
         location = EarthLocation.from_geodetic(lon=lon, lat=lat)
         coord = SkyCoord(alt=alt, az=az, frame="altaz", location=location, obstime=obstime)
         return cls(coord)
@@ -31,10 +32,10 @@ class Mount:
 
     def _coord_to_mount_pos(self, coord: SkyCoord) -> Tuple[int, int]:
         true_altaz: AltAz = coord.transform_to('altaz')
-        fake_altaz = SkyCoord(alt=true_altaz.alt, az= true_altaz.az - self._axCoord.az, frame="altaz", obstime=Time.now(), location=self._fakeLocation)
+        fake_altaz = SkyCoord(alt=true_altaz.alt, az= true_altaz.az - self._axCoord.az, frame="altaz", obstime=self._time_func(), location=self._fakeLocation)
         fake_hadec = fake_altaz.transform_to('hadec')
-        ax1 = round((fake_hadec.ha + 180 * u.deg).wrap_at('360d').deg / 360 * self.cprRa)
-        ax2 = round(fake_hadec.dec.wrap_at('180d').deg / 360 * self.cprDec)
+        ax1 = round((fake_hadec.ha + 180 * u.deg).wrap_at('360deg').deg / 360 * self.cprRa)
+        ax2 = round(fake_hadec.dec.wrap_at('180deg').deg / 360 * self.cprDec)
         return ax1, ax2
 
     def _mount_pos_to_coord(self, ax1: int, ax2: int) -> SkyCoord:
@@ -49,13 +50,16 @@ class Mount:
             ax2_angle = -90 * u.deg - ax2_angle
 
         ax1_angle = ax1_angle.wrap_at('360d')
-        fake_hadec = SkyCoord(frame="hadec", ha=ax1_angle, dec=ax2_angle, obstime=Time.now(), location=self._fakeLocation)
+        fake_hadec = SkyCoord(frame="hadec", ha=ax1_angle, dec=ax2_angle, obstime=self._time_func(), location=self._fakeLocation)
         fake_altaz = fake_hadec.transform_to('altaz')
         coord = SkyCoord(frame="altaz", alt=fake_altaz.alt, az=fake_altaz.az + self._axCoord.az, obstime=fake_hadec.obstime, location=fake_hadec.location)
         return coord
 
     def _time_to_mount_time(self, t: Time):
-        return t.to_value("unix") * 1000
+        return t.unix * 1000
+
+    def set_now_func(self, time_func: Callable[[], Time]):
+        self._time_func = time_func
 
     @property
     def axCoord(self) -> SkyCoord:
@@ -64,7 +68,7 @@ class Mount:
     @axCoord.setter
     def axCoord(self, val: SkyCoord):
         self._axCoord = val.transform_to("altaz")
-        self.location = val.location
+        self.location: EarthLocation = val.location
         self._recalculate_fake_location()
     
     def calibrate_ant_coord(self, antCoord: SkyCoord):
@@ -87,7 +91,7 @@ class Mount:
             sleep(_MOUNT_REFRESH_INTERVAL)
 
     def sync_time(self) -> None:
-        current_mount_time = self._time_to_mount_time(Time.now())
+        current_mount_time = self._time_to_mount_time(self._time_func())
         self.mountConnection.set_time(current_mount_time)
     
     def get_position(self) -> SkyCoord:
@@ -118,6 +122,10 @@ class Mount:
     def get_status(self) -> MountStatus:
         return self.mountConnection.get_mount_status()
 
+    def get_time(self) -> Time:
+        time_raw = self.mountConnection.get_time()
+        return Time(time_raw/1000.0, format="unix")
+
     def connect(self, device: str):
         self.mountConnection.open(device)
         self.cprRa, self.cprDec = self.mountConnection.get_cpr()
@@ -128,10 +136,14 @@ class Mount:
     def disconnect(self):
         self.mountConnection.close()
 
-    def local_altaz(self, alt: Unit, az: Unit, t=Time.now()) -> SkyCoord:
+    def local_altaz(self, alt: Union[Quantity, str], az: Union[Quantity, str], t: Time=None) -> SkyCoord:
+        if t == None:
+            t = self._time_func()
         return SkyCoord(frame="altaz", alt=alt, az=az, obstime=t, location=self.location)
     
-    def local_radec(self, ra: Unit, dec: Unit, t=Time.now()) -> SkyCoord:
+    def local_radec(self, ra: Union[Quantity, str], dec: Union[Quantity, str], t: Time=None) -> SkyCoord:
+        if t == None:
+            t = self._time_func()
         return SkyCoord(frame="radec", ra=ra, dec=dec, obstime=t, location=self.location)
 
     def __del__(self):
