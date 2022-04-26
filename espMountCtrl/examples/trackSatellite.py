@@ -9,13 +9,15 @@ import astropy.units as u
 from ..mount import Mount
 from matplotlib import pyplot as plt
 import numpy as np
+import math
 
 name = 'grbalpha'
-sat = SatelliteFinder.fromName(name, False)[0]
+#sat = SatelliteFinder.fromName(name, False)[0]
+sat = SatelliteFinder.fromCatalogueNumber(25544)[0]
 print("Satellite:", sat)
 
 mount = Mount.from_ax_altaz('90deg', '0deg', '16deg', '49deg', '220m')
-mount.connect("/dev/ttyUSB1")
+mount.connect("/dev/ttyUSB0")
 mount.calibrate_ant_coord(mount.local_altaz('0deg', '90deg'))
 satTracker = SatelliteTracker(mount)
 transits = satTracker.find_transits(sat, Time.now() + 3 * u.day, min_elev=10 * u.deg)
@@ -30,7 +32,7 @@ print("Best transit:", best_transit)
 
 
 print("Running track preview")
-track_points = best_transit.calculate_track_points(1000)
+track_points = best_transit.calculate_track_points(600)
 
 plt.ion()
 
@@ -41,6 +43,7 @@ times = np.array([point.t.unix for point in track_points])
 
 fig_altaz, ax_altaz = plt.subplots(subplot_kw={'projection':'polar'})
 ax_altaz.plot(azs_sim, alts_sim, label="Expected")
+ax_altaz.set_ylim(0, 90)
 ax_altaz.set_rticks(range(0, 91, 20))
 ax_altaz.invert_yaxis()
 ax_altaz.grid(True)
@@ -55,7 +58,7 @@ plt.legend()
 ticks_alt = plt.xticks()
 
 fig_az = plt.figure()
-plt.plot(times, azs_sim, label="Expected")
+plt.plot(times, azs_sim / math.pi * 180, label="Expected")
 plt.title("Azimuth")
 plt.legend()
 ticks_az = plt.xticks()
@@ -64,7 +67,7 @@ plt.pause(5)
 plt.figure(fig_altaz)
 
 track_start_t = Time.now()
-now_func = lambda: Time.now() + (best_transit.time_rise - track_start_t) - 0.5 * u.min # TODO: change this to set_time on Mount
+now_func = lambda: Time.now() + (best_transit.time_rise - track_start_t) - 2 * u.min # TODO: change this to set_time on Mount
 mount.set_now_func(now_func)
 mount.track(track_points, lambda i, tot: print("Uploaded", i, "/", tot))
 
@@ -83,10 +86,10 @@ graph_az = plt.plot(times_real, azs_real, label="Mount")[0]
 
 plt.legend()
 while mount.get_status() != MountStatus.STOPPED:
+    times_real.append(now_func().unix)
     pos = mount.get_position().transform_to("altaz")
     alts_real.append(pos.alt.deg)
     azs_real.append(pos.az.rad)
-    times_real.append(now_func().unix)
 
     print("Position:", (round(pos.alt.deg, 2), round(pos.az.deg, 2)))
     ax_altaz.set_rticks(range(0, 91, 20))
@@ -103,7 +106,7 @@ while mount.get_status() != MountStatus.STOPPED:
     plt.draw()
     plt.figure(fig_az)
     graph_az.set_xdata(times_real)
-    graph_az.set_ydata(azs_real)
+    graph_az.set_ydata(np.array(azs_real) / math.pi * 180)
     plt.xticks(ticks_az[0], ticks_az[1])
     plt.draw()
 

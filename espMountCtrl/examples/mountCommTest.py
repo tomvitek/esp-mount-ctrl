@@ -2,7 +2,7 @@ from time import sleep, time
 from .. import mountConnection
 
 mountComm = mountConnection.MountConnection()
-mountComm.open("/dev/ttyUSB1")
+mountComm.open("/dev/ttyUSB0")
 mountComm.set_position(1000, 0)
 pos = mountComm.get_position()
 print("Position:", pos)
@@ -22,7 +22,7 @@ print("Track buffer - size:", trackBufferSize)
 mountComm.stop(True)
 print("Initiating goto...")
 mountComm.set_position(0, 0)
-mountComm.goto(cpr[0] / 4, 0)
+mountComm.goto(cpr[0] / 4, cpr[1] / 8)
 
 t1 = time()
 while mountComm.get_mount_status() == mountConnection.MountStatus.GOTO:
@@ -30,7 +30,7 @@ while mountComm.get_mount_status() == mountConnection.MountStatus.GOTO:
     sleep(0.5)
 t2 = time()
 print("Goto finished. Duration:", t2 - t1)
-print("Initiating sample tracking...")
+print("Initiating tracking test...")
 mountComm.set_position(0,0)
 mountComm.clear_track_buffer()
 mountComm.tracking_stop()
