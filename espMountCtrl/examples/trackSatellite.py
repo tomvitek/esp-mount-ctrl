@@ -19,7 +19,7 @@ print("Satellite:", sat)
 
 # SETUP MOUNT
 mount = Mount.from_ax_altaz('90deg', '0deg', '16deg', '49deg', '220m')
-mount.connect("/dev/ttyUSB0")
+mount.connect()
 mount.calibrate_ant_coord(mount.local_altaz('0deg', '90deg'))
 
 # FIND OPTIMAL TRANSIT IN THE NEAR FUTURE

@@ -8,7 +8,7 @@ location = EarthLocation.from_geodetic(lon=49, lat=16)
 axCoord = SkyCoord(frame="altaz", az='270d', alt='45d', obstime=Time.now(), location=location)
 antCoord = SkyCoord(frame="altaz", az='90d', alt='0d', obstime=Time.now(), location=location)
 mount = Mount(axCoord)
-mount.connect("/dev/ttyUSB1")
+mount.connect()
 mount.calibrate_ant_coord(antCoord)
 
 trackPoints: List[TrackPoint] = []

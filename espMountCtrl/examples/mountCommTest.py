@@ -2,7 +2,7 @@ from time import sleep, time
 from .. import mountConnection
 
 mountComm = mountConnection.MountConnection()
-mountComm.open("/dev/ttyUSB0")
+mountComm.open()
 mountComm.set_position(1000, 0)
 pos = mountComm.get_position()
 print("Position:", pos)

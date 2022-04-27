@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
 import serial
+import serial.tools.list_ports
 from collections.abc import Sequence
 from typing import Tuple, List
+import os
 
 _CMD_FIRST_CHAR = "+"
 _CMD_STR_GET_POS = "gp"
@@ -23,6 +25,7 @@ _CMD_STR_GET_STATUS = "gs"
 
 _CMD_FORMATTING = "ascii"
 
+_ENVVAR_MOUNT_PORT = "MOUNT_PORT"
 
 class TrackPointAddResult(Enum):
     OK = 0
@@ -47,7 +50,13 @@ class MountConnection:
     def __init__(self):
         self.ser = serial.Serial()
 
-    def open(self, device: str) -> bool:
+    def open(self, device: str = None) -> bool:
+        if device is None:
+            device = os.getenv(_ENVVAR_MOUNT_PORT)
+        if device is None:
+            ports = serial.tools.list_ports.comports()
+            if len(ports) > 0:
+                device = ports[0].device
         self.ser = serial.Serial(device, 115200, timeout=1)
         return self.ser.is_open
 

@@ -131,7 +131,7 @@ class Mount:
         time_raw = self.mountConnection.get_time()
         return Time(time_raw/1000.0, format="unix")
 
-    def connect(self, device: str):
+    def connect(self, device: str = None):
         self.mountConnection.open(device)
         self.cprRa, self.cprDec = self.mountConnection.get_cpr()
     
