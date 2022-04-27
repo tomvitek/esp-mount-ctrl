@@ -11,16 +11,20 @@ from matplotlib import pyplot as plt
 import numpy as np
 import math
 
+## DOWNLOAD SATELLITE INFO
 name = 'grbalpha'
-#sat = SatelliteFinder.fromName(name, False)[0]
-sat = SatelliteFinder.fromCatalogueNumber(25544)[0]
+sat = SatelliteFinder.fromName(name, False)[0]
+#sat = SatelliteFinder.fromCatalogueNumber(25544)[0]  # ISS
 print("Satellite:", sat)
 
+# SETUP MOUNT
 mount = Mount.from_ax_altaz('90deg', '0deg', '16deg', '49deg', '220m')
 mount.connect("/dev/ttyUSB0")
 mount.calibrate_ant_coord(mount.local_altaz('0deg', '90deg'))
+
+# FIND OPTIMAL TRANSIT IN THE NEAR FUTURE
 satTracker = SatelliteTracker(mount)
-transits = satTracker.find_transits(sat, Time.now() + 3 * u.day, min_elev=10 * u.deg)
+transits = satTracker.find_transits(sat, time_to=Time.now() + 3 * u.day, min_elev=10 * u.deg)
 best_transit: Transit = None
 print("Transits:")
 for transit in transits:
@@ -66,9 +70,7 @@ plt.draw()
 plt.pause(5)
 plt.figure(fig_altaz)
 
-track_start_t = Time.now()
-now_func = lambda: Time.now() + (best_transit.time_rise - track_start_t) - 2 * u.min # TODO: change this to set_time on Mount
-mount.set_now_func(now_func)
+mount.time = best_transit.time_rise - 2 * u.min
 mount.track(track_points, lambda i, tot: print("Uploaded", i, "/", tot))
 
 alts_real = []
@@ -86,7 +88,7 @@ graph_az = plt.plot(times_real, azs_real, label="Mount")[0]
 
 plt.legend()
 while mount.get_status() != MountStatus.STOPPED:
-    times_real.append(now_func().unix)
+    times_real.append(mount.time.unix)
     pos = mount.get_position().transform_to("altaz")
     alts_real.append(pos.alt.deg)
     azs_real.append(pos.az.rad)
