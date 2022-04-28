@@ -89,7 +89,7 @@ class Mount:
     def stop(self, block: bool = False) -> None:
         self.mountConnection.stop(False)
         if block:
-            self.wait_for_stop
+            self.wait_for_stop()
 
     def wait_for_stop(self):
         while(self.mountConnection.get_mount_status() != MountStatus.STOPPED):

@@ -66,6 +66,13 @@ class Transit:
         sf_time = ts.from_astropy(t)
         return self._sf_pos_to_altaz(diff.at(sf_time), sf_time)
 
+    def get_distance(self, t: Time) -> Quantity:
+        diff = self.satellite - self.sf_loc
+        sf_time = ts.from_astropy(t)
+        pos = diff.at(sf_time)
+        _,_, dst = pos.altaz()
+        return dst.km * u.km
+
     def calculate_track_points(self, track_point_count) -> List[TrackPoint]:
         dt = (self.time_set - self.time_rise) / track_point_count
         track_points: List[TrackPoint] = []
