@@ -1,23 +1,19 @@
-from asyncore import loop
-from time import sleep
 from espMountCtrl.gui.matplotlibTrackGui import MatplotlibTrackGUI
 from espMountCtrl.mount import Mount
-from espMountCtrl.satellites.transit import Transit
-from ..satellites import SatelliteFinder, SatelliteTracker
+from espMountCtrl.satellites import SatelliteFinder, SatelliteTracker, Transit
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
 import astropy.units as u
-from ..mount import Mount
 from matplotlib import pyplot as plt
 
 ## DOWNLOAD SATELLITE INFO
 name = 'grbalpha'
-#sat = SatelliteFinder.fromName(name, False)[0]
-sat = SatelliteFinder.fromCatalogueNumber(25544)[0]  # ISS
+sat = SatelliteFinder.fromName(name, False)[0]
+#sat = SatelliteFinder.fromCatalogueNumber(25544)[0]  # ISS
 print("Satellite:", sat)
 
 # SETUP MOUNT
-mount = Mount.from_ax_altaz('49deg', '0deg', '16deg', '49deg', '220m')
+mount = Mount.from_ax_altaz(alt='49deg', az='0deg', lon='16deg', lat='49deg', elevation='220m')
 mount.connect()
 mount.stop(block=True)
 mount.calibrate_ant_coord(mount.local_altaz('0deg', '90deg'))
