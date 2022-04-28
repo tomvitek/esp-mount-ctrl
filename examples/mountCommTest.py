@@ -1,7 +1,7 @@
 from time import sleep, time
-from .. import mountConnection
+from espMountCtrl.mountConnection import MountConnection, MountStatus
 
-mountComm = mountConnection.MountConnection()
+mountComm = MountConnection()
 mountComm.open()
 mountComm.set_position(1000, 0)
 pos = mountComm.get_position()
@@ -25,7 +25,7 @@ mountComm.set_position(0, 0)
 mountComm.goto(cpr[0] / 4, cpr[1] / 8)
 
 t1 = time()
-while mountComm.get_mount_status() == mountConnection.MountStatus.GOTO:
+while mountComm.get_mount_status() == MountStatus.GOTO:
     print(mountComm.get_position()[0] / float(cpr[0]/4) * 100, "%")
     sleep(0.5)
 t2 = time()
@@ -40,7 +40,7 @@ mountComm.add_track_point(0, 0, 1000)
 mountComm.set_time(0)
 print("Starting tracking")
 mountComm.tracking_start()
-while mountComm.get_mount_status() == mountConnection.MountStatus.TRACKING:
+while mountComm.get_mount_status() == MountStatus.TRACKING:
     sleep(0.5)
 print("Tracking finished")
 

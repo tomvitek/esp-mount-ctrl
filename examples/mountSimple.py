@@ -1,4 +1,4 @@
-from ..mount import Mount
+from espMountCtrl.mount import Mount
 from astropy.coordinates import SkyCoord, EarthLocation
 import astropy.units as u
 from astropy.time import Time

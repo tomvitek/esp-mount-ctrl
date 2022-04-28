@@ -8,35 +8,35 @@
             "name": "trackSatellite",
             "type": "python",
             "request": "launch",
-            "module": "espMountCtrl.examples.trackSatellite",
+            "module": "examples.trackSatellite",
             "justMyCode": true
         },
         {
             "name": "customTracking",
             "type": "python",
             "request": "launch",
-            "module": "espMountCtrl.examples.customTracking",
+            "module": "examples.customTracking",
             "justMyCode": true
         },
         {
             "name": "mountAxTest",
             "type": "python",
             "request": "launch",
-            "module": "espMountCtrl.examples.mountAxTest",
+            "module": "examples.mountAxTest",
             "justMyCode": true
         },
         {
             "name": "mountSimple",
             "type": "python",
             "request": "launch",
-            "module": "espMountCtrl.examples.mountSimple",
+            "module": "examples.mountSimple",
             "justMyCode": true
         },
         {
             "name": "mountCommTest",
             "type": "python",
             "request": "launch",
-            "module": "espMountCtrl.examples.mountCommTest",
+            "module": "examples.mountCommTest",
             "justMyCode": true
         }
     ]
