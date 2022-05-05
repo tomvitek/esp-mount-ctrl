@@ -34,10 +34,8 @@ for alt in range(alt_start, 91, alt_res):
     deltaT += 10 * time_per_degree
 
 # UPLOAD TRACK POINTS
-def update_callback(i: int, total: int):
-    print("Uploaded track point", i, "/", total)
-
-mount.track(trackPoints, update_callback)
+print("Uploading track points")
+mount.track(trackPoints, print_upload_progres=True)
 print("Started tracking")
 
 # PLOT CURRENT STATUS

@@ -43,7 +43,8 @@ trackGui = MatplotlibTrackGUI(mount, track_points)
 mount.time = best_transit.time_rise - 2 * u.min
 
 # START TRACKING
-mount.track(track_points, lambda i, tot: print("Uploaded", i, "/", tot))
+print("Uploading track points...")
+mount.track(track_points, print_upload_progres=True)
 
 # PLOT AND PRINT DATA
 def print_data(pos: SkyCoord, part: float):
