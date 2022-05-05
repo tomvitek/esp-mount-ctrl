@@ -25,7 +25,7 @@ _CMD_STR_GET_STATUS = "gs"
 
 _CMD_FORMATTING = "ascii"
 
-_ENVVAR_MOUNT_PORT = "MOUNT_PORT"
+_ENVVAR_MOUNT_PORT = "ESP_MOUNT_PORT"
 
 class TrackPointAddResult(Enum):
     OK = 0
