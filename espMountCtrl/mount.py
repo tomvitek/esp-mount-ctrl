@@ -7,6 +7,7 @@ from astropy.time import Time
 from typing import Iterable, Tuple, Callable, Union
 from time import sleep
 import math
+import alive_progress
 
 _MOUNT_REFRESH_INTERVAL = 0.5
 @dataclass
@@ -103,24 +104,26 @@ class Mount:
         ax1, ax2 = self.mountConnection.get_position()
         return self._mount_pos_to_coord(ax1, ax2)
 
-    def track(self, trackPoints: Iterable[TrackPoint], update_callback: Callable[[int, int], None] = None) -> None:
+    def track(self, trackPoints: Iterable[TrackPoint], update_callback: Callable[[int, int], None] = None, print_upload_progres=False) -> None:
         self.mountConnection.stop()
         self.mountConnection.clear_track_buffer()
         
         track_buffer_space = self.mountConnection.get_track_buffer_free_space()
         if track_buffer_space < len(trackPoints):
             raise Exception("Track point count exceeds maximum mount's buffer. It is possible to overcome this, but it is not implemented yet")
-        
+        point_count = len(trackPoints)
+        if print_upload_progres:
+            trackPoints = alive_progress.alive_it(trackPoints)
         for idx, point in enumerate(trackPoints):
             if update_callback != None:
-                update_callback(idx, len(trackPoints))
+                update_callback(idx, point_count)
             
             ax1, ax2 = self._coord_to_mount_pos(point.coord)
             mount_time = self._time_to_mount_time(point.t)
             self.mountConnection.add_track_point(ax1, ax2, mount_time)
         
         if update_callback != None:
-            update_callback(len(trackPoints), len(trackPoints))
+            update_callback(point_count, point_count)
         self.sync_time()
         self.mountConnection.tracking_start()
 
